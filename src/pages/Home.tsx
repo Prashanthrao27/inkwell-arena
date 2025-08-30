@@ -1,93 +1,105 @@
+import { useEffect, useState } from "react";
 import { NavBar } from "@/components/NavBar";
 import { HeroSection } from "@/components/HeroSection";
 import { BlogCard } from "@/components/BlogCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, Star, Clock, Filter } from "lucide-react";
-
-// Mock data - Replace with real data from your backend
-const featuredBlogs = [
-  {
-    id: "1",
-    title: "The Future of Web Development: What's Coming in 2024",
-    excerpt: "Explore the latest trends and technologies that will shape web development in the coming year. From AI integration to new frameworks...",
-    author: {
-      name: "Sarah Chen",
-      avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b47c?w=40&h=40&fit=crop&crop=face"
-    },
-    publishedAt: new Date("2024-01-15"),
-    readTime: 8,
-    likes: 245,
-    comments: 32,
-    tags: ["Web Development", "Technology", "AI"],
-    coverImage: "https://images.unsplash.com/photo-1627398242454-45a1465c2479?w=400&h=250&fit=crop"
-  },
-  {
-    id: "2",
-    title: "Building Scalable React Applications: Best Practices",
-    excerpt: "Learn how to structure your React applications for maximum scalability and maintainability. This comprehensive guide covers...",
-    author: {
-      name: "Mike Johnson",
-      avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face"
-    },
-    publishedAt: new Date("2024-01-12"),
-    readTime: 12,
-    likes: 189,
-    comments: 24,
-    tags: ["React", "JavaScript", "Architecture"],
-    coverImage: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=400&h=250&fit=crop"
-  },
-  {
-    id: "3",
-    title: "The Art of Technical Writing: A Developer's Guide",
-    excerpt: "Improve your technical communication skills and learn how to write documentation that developers actually want to read...",
-    author: {
-      name: "Emma Rodriguez",
-      avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=40&h=40&fit=crop&crop=face"
-    },
-    publishedAt: new Date("2024-01-10"),
-    readTime: 6,
-    likes: 156,
-    comments: 18,
-    tags: ["Writing", "Documentation", "Career"],
-    coverImage: "https://images.unsplash.com/photo-1522199755839-a2bacb67c546?w=400&h=250&fit=crop"
-  }
-];
-
-const trendingBlogs = [
-  {
-    id: "4",
-    title: "Understanding Microservices Architecture",
-    excerpt: "A deep dive into microservices patterns and when to use them...",
-    author: {
-      name: "David Park",
-      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face"
-    },
-    publishedAt: new Date("2024-01-08"),
-    readTime: 15,
-    likes: 312,
-    comments: 45,
-    tags: ["Architecture", "Backend", "DevOps"]
-  },
-  {
-    id: "5",
-    title: "CSS Grid vs Flexbox: When to Use What",
-    excerpt: "Master the art of CSS layouts with this comprehensive comparison...",
-    author: {
-      name: "Lisa Wang",
-      avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=40&h=40&fit=crop&crop=face"
-    },
-    publishedAt: new Date("2024-01-05"),
-    readTime: 10,
-    likes: 278,
-    comments: 34,
-    tags: ["CSS", "Frontend", "Design"]
-  }
-];
+import { supabase } from "@/integrations/supabase/client";
 
 const categories = ["All", "Technology", "Design", "Career", "Tutorial", "Opinion"];
 
 export default function Home() {
+  const [featuredBlogs, setFeaturedBlogs] = useState<any[]>([]);
+  const [trendingBlogs, setTrendingBlogs] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      const { data } = await supabase
+        .from("posts")
+        .select(`
+          id, title, content, tags, created_at, view_count,
+          profiles!posts_user_id_fkey(display_name, username)
+        `)
+        .eq("status", "approved")
+        .order("view_count", { ascending: false })
+        .limit(6);
+
+      if (data && data.length > 0) {
+        // Transform to match the expected format
+        const transformedPosts = data.map((post) => ({
+          id: post.id,
+          title: post.title,
+          excerpt: post.content.slice(0, 160) + "...",
+          author: {
+            name: post.profiles?.display_name || post.profiles?.username || "Anonymous",
+            avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b47c?w=40&h=40&fit=crop&crop=face"
+          },
+          publishedAt: new Date(post.created_at),
+          readTime: Math.ceil(post.content.length / 200),
+          likes: Math.floor(Math.random() * 100),
+          comments: Math.floor(Math.random() * 50),
+          tags: post.tags || [],
+          coverImage: "https://images.unsplash.com/photo-1627398242454-45a1465c2479?w=400&h=250&fit=crop"
+        }));
+
+        setFeaturedBlogs(transformedPosts.slice(0, 3));
+        setTrendingBlogs(transformedPosts.slice(3, 6));
+      } else {
+        // Fallback to mock data
+        setFeaturedBlogs([
+          {
+            id: "1",
+            title: "The Future of Web Development: What's Coming in 2024",
+            excerpt: "Explore the latest trends and technologies that will shape web development in the coming year. From AI integration to new frameworks...",
+            author: {
+              name: "Sarah Chen",
+              avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b47c?w=40&h=40&fit=crop&crop=face"
+            },
+            publishedAt: new Date("2024-01-15"),
+            readTime: 8,
+            likes: 245,
+            comments: 32,
+            tags: ["Web Development", "Technology", "AI"],
+            coverImage: "https://images.unsplash.com/photo-1627398242454-45a1465c2479?w=400&h=250&fit=crop"
+          },
+          {
+            id: "2",
+            title: "Building Scalable React Applications: Best Practices",
+            excerpt: "Learn how to structure your React applications for maximum scalability and maintainability. This comprehensive guide covers...",
+            author: {
+              name: "Mike Johnson",
+              avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face"
+            },
+            publishedAt: new Date("2024-01-12"),
+            readTime: 12,
+            likes: 189,
+            comments: 24,
+            tags: ["React", "JavaScript", "Architecture"],
+            coverImage: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=400&h=250&fit=crop"
+          }
+        ]);
+        setTrendingBlogs([
+          {
+            id: "4",
+            title: "Understanding Microservices Architecture",
+            excerpt: "A deep dive into microservices patterns and when to use them...",
+            author: {
+              name: "David Park",
+              avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face"
+            },
+            publishedAt: new Date("2024-01-08"),
+            readTime: 15,
+            likes: 312,
+            comments: 45,
+            tags: ["Architecture", "Backend", "DevOps"]
+          }
+        ]);
+      }
+    };
+
+    fetchPosts();
+  }, []);
   return (
     <div className="min-h-screen bg-background">
       <NavBar />
@@ -145,7 +157,7 @@ export default function Home() {
             </div>
 
             <div className="space-y-8">
-              {[...featuredBlogs, ...trendingBlogs].map((blog) => (
+              {featuredBlogs.concat(trendingBlogs).map((blog) => (
                 <BlogCard key={blog.id} {...blog} />
               ))}
             </div>

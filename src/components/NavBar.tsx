@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Search, Menu, X, PenTool, User, Settings } from "lucide-react";
+import { Search, Menu, X, PenTool, User, Settings, LogOut } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 export const NavBar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // TODO: Replace with actual auth state
+  const { user, signOut } = useAuth();
 
   return (
     <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
@@ -44,19 +45,21 @@ export const NavBar = () => {
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center space-x-4">
-            {isLoggedIn ? (
+            {user ? (
               <>
                 <Button variant="ghost" size="sm" asChild>
-                  <Link to="/create">
+                  <Link to="/profile">
                     <PenTool className="h-4 w-4 mr-2" />
                     Write
                   </Link>
                 </Button>
-                <Button variant="ghost" size="icon">
-                  <User className="h-4 w-4" />
+                <Button variant="ghost" size="icon" asChild>
+                  <Link to="/profile">
+                    <User className="h-4 w-4" />
+                  </Link>
                 </Button>
-                <Button variant="ghost" size="icon">
-                  <Settings className="h-4 w-4" />
+                <Button variant="ghost" size="icon" onClick={signOut}>
+                  <LogOut className="h-4 w-4" />
                 </Button>
               </>
             ) : (
@@ -121,10 +124,10 @@ export const NavBar = () => {
 
               {/* Mobile Actions */}
               <div className="flex flex-col space-y-2 pt-4 border-t border-border">
-                {isLoggedIn ? (
+                {user ? (
                   <>
                     <Button variant="ghost" asChild className="justify-start">
-                      <Link to="/create" onClick={() => setIsMenuOpen(false)}>
+                      <Link to="/profile" onClick={() => setIsMenuOpen(false)}>
                         <PenTool className="h-4 w-4 mr-2" />
                         Write Article
                       </Link>
@@ -134,6 +137,13 @@ export const NavBar = () => {
                         <User className="h-4 w-4 mr-2" />
                         Profile
                       </Link>
+                    </Button>
+                    <Button variant="ghost" className="justify-start" onClick={() => {
+                      setIsMenuOpen(false);
+                      signOut();
+                    }}>
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Sign Out
                     </Button>
                   </>
                 ) : (

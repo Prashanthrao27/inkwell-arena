@@ -41,14 +41,14 @@ export function useAuth() {
     return { data, error };
   }, []);
 
-  const signInWithGoogle = useCallback(async () => {
+  const signInWithGitHub = useCallback(async () => {
     const redirectUrl = `${window.location.origin}/`;
     const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
+      provider: 'github',
       options: { redirectTo: redirectUrl }
     });
     return { data, error };
   }, []);
 
-  return { user, session, loading, signOut, signInWithPassword, signUpWithPassword, signInWithGoogle };
+  return { user, session, loading, signOut, signInWithPassword, signUpWithPassword, signInWithGitHub };
 }

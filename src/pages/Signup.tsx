@@ -7,13 +7,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Eye, EyeOff, Mail, Lock, PenTool } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-export default function Login() {
+
+export default function Signup() {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { signInWithPassword, signInWithGoogle, session } = useAuth();
+  const { signUpWithPassword, signInWithGoogle, session } = useAuth();
 
   useEffect(() => {
     if (session) navigate("/dashboard");
@@ -21,38 +22,34 @@ export default function Login() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { error } = await signInWithPassword(email, password);
+    const { error } = await signUpWithPassword(email, password);
     if (error) {
-      toast({ title: "Sign in failed", description: error.message, variant: "destructive" });
+      toast({ title: "Sign up failed", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "Welcome back!" });
-      navigate("/dashboard");
+      toast({ title: "Check your email", description: "Confirm your address to finish signing up." });
     }
   };
 
   return (
     <div className="min-h-screen bg-feature-gradient flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* Logo */}
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center space-x-2">
             <PenTool className="h-8 w-8 text-primary" />
             <span className="font-bold text-2xl gradient-text">BlogFlow</span>
           </Link>
-          <p className="text-muted-foreground mt-2">Welcome back to your writing journey</p>
+          <p className="text-muted-foreground mt-2">Create your account to start writing</p>
         </div>
 
-        {/* Login Form */}
         <Card className="blog-card">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-center">Sign In</CardTitle>
+            <CardTitle className="text-2xl font-bold text-center">Create an account</CardTitle>
             <CardDescription className="text-center">
-              Enter your credentials to access your account
+              Sign up with your email and password
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Email */}
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <div className="relative">
@@ -69,7 +66,6 @@ export default function Login() {
                 </div>
               </div>
 
-              {/* Password */}
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
                 <div className="relative">
@@ -77,7 +73,7 @@ export default function Login() {
                   <Input
                     id="password"
                     type={showPassword ? "text" : "password"}
-                    placeholder="Enter your password"
+                    placeholder="Create a password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="pl-10 pr-10"
@@ -99,23 +95,11 @@ export default function Login() {
                 </div>
               </div>
 
-              {/* Forgot Password */}
-              <div className="flex justify-end">
-                <Link
-                  to="/forgot-password"
-                  className="text-sm text-primary hover:underline"
-                >
-                  Forgot password?
-                </Link>
-              </div>
-
-              {/* Submit Button */}
               <Button type="submit" variant="hero" className="w-full" size="lg">
-                Sign In
+                Sign Up
               </Button>
             </form>
 
-            {/* Divider */}
             <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-border"></div>
@@ -125,7 +109,6 @@ export default function Login() {
               </div>
             </div>
 
-            {/* Social Login */}
             <div className="grid grid-cols-1 gap-4">
               <Button variant="outline" className="w-full" onClick={async () => {
                 const { error } = await signInWithGoogle();
@@ -143,11 +126,10 @@ export default function Login() {
               </Button>
             </div>
 
-            {/* Sign Up Link */}
             <p className="text-center text-sm text-muted-foreground mt-6">
-              Don't have an account?{" "}
-              <Link to="/signup" className="text-primary hover:underline font-medium">
-                Sign up
+              Already have an account? {""}
+              <Link to="/login" className="text-primary hover:underline font-medium">
+                Sign in
               </Link>
             </p>
           </CardContent>
